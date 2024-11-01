@@ -1,0 +1,6 @@
+[submodule "secp256k1"]
+	path = external/secp256k1
+	url = https://github.com/bitcoin-core/secp256k1.git
+[submodule "external/bech32"]
+	path = external/bech32
+	url = https://github.com/sipa/bech32.git

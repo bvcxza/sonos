@@ -1,0 +1,17 @@
+# mamba env update -n $(basename $PWD) -f conda.yml
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - sysroot_linux-64 2.34
+  - cxx-compiler
+  - ccache
+  - pkg-config
+  - cmake
+  - make
+  - ninja
+  - gdb
+  - gtest
+# libs
+  - boost
+  - openssl
