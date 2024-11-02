@@ -19,6 +19,7 @@
 #include "../examples/examples_util.h"
 
 #include "key.h"
+#include "commands/convert_cmd.h"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace base64 = beast::detail::base64;         // from <boost/beast/core/detail/base64.hpp>
@@ -33,7 +34,7 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 int main(int argc, char* argv[])
 {
 	// Check command line arguments.
-	if (argc > 1)
+	if (argc < 2)
 	{
 		std::cerr << "EXIT_FAILURE\n";
 		return EXIT_FAILURE;
@@ -41,6 +42,33 @@ int main(int argc, char* argv[])
 
 	try
 	{
+		std::map<std::string, std::shared_ptr<sonos::command>> commands = {
+			{"convert", std::make_shared<sonos::convert_cmd>()}//,
+		};
+
+		auto cmd = commands[argv[1]];
+		if (!cmd)
+		{
+			std::cerr << argv[0] << " Error: " << "TODO help" << std::endl;
+			return EXIT_FAILURE;
+		}
+		try
+		{
+			if (!cmd->execute(argc, argv))
+			{
+				std::cerr << argv[0] << " Error\n" << cmd->help() << std::endl;
+				return EXIT_FAILURE;
+			}
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << argv[0] << " Error: " << e.what() << '\n' << cmd->help() << std::endl;
+			return EXIT_FAILURE;
+		}
+
+		// TODO
+		return EXIT_SUCCESS;
+
 		net::io_context ioc;
 		ssl::context ctx{ssl::context::tlsv12_client};
 		ctx.set_default_verify_paths();
@@ -111,7 +139,7 @@ int main(int argc, char* argv[])
 	}
 	catch(std::exception const& e)
 	{
-		std::cerr << "Error: " << e.what() << std::endl;
+		std::cerr << argv[0] << " Error: " << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 

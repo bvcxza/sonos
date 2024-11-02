@@ -46,7 +46,10 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
 )
 
-add_executable(main_ex src/main.cpp)
+add_executable(main_ex
+	src/commands/convert_cmd.cpp
+	src/main.cpp
+)
 set_property(TARGET main_ex PROPERTY OUTPUT_NAME ${CMAKE_PROJECT_NAME})
 target_include_directories(main_ex PRIVATE
 	include
