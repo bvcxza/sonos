@@ -11,8 +11,6 @@
 namespace sonos
 {
 
-//auto m_secp256k1_ctx_deleter = [](secp256k1_context* ctx) { secp256k1_context_destroy(ctx); };
-
 class keypair
 {
 public:

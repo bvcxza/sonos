@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-#include "../keypair.h"
+#include "../key.h"
 
 namespace sonos
 {
@@ -16,8 +16,8 @@ bool convert_cmd::execute(int argc, char* argv[])
 {
 	if (argc < 2) return false;
 
-	keypair kp { argv[2] };
-	std::cout << kp.pub().to_hex() << std::endl;
+	key k { argv[2] };
+	std::cout << k.to_hex() << std::endl;
 	return true;
 }
 
