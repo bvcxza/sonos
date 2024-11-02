@@ -1,6 +1,8 @@
 #pragma once
 
-#include "data.h"
+#include <cstdint>
+#include <string>
+#include <vector>
 
 namespace sonos
 {
@@ -11,11 +13,12 @@ public:
 	key() = default;
 	key(const std::string& key);
 	auto size() const { return m_data.size(); }
-	auto get() const { return m_data.get(); }
-	auto get() { return m_data.get(); }
+	auto data() const { return m_data.data(); }
+	auto data() { m_data.resize(32); return m_data.data(); }
 	std::string to_hex() const;
+	std::string to_bech32(const std::string& hrp) const;
 private:
-	data<uint8_t, 32> m_data;
+	std::vector<uint8_t> m_data;
 };
 
 }

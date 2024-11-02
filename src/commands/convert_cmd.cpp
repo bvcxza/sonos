@@ -14,10 +14,19 @@ std::string convert_cmd::help() const
 
 bool convert_cmd::execute(int argc, char* argv[])
 {
-	if (argc < 2) return false;
+	if (argc < 3) return false;
 
-	key k { argv[2] };
-	std::cout << k.to_hex() << std::endl;
+	std::string keystr = argv[2];
+	key k { keystr };
+	if (keystr.starts_with("nsec1") || keystr.starts_with("npub1"))
+		std::cout << k.to_hex() << std::endl;
+	else
+	{
+		if (argc != 4) return false;
+		std::string hrp = argv[3];
+		if (hrp.size() != 4) return false;
+		std::cout << k.to_bech32(hrp) << std::endl;
+	}
 	return true;
 }
 

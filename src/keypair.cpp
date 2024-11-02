@@ -2,6 +2,8 @@
 
 #include <cassert>
 
+#include <secp256k1_extrakeys.h>
+
 #include "utils.h"
 
 namespace sonos
@@ -12,10 +14,11 @@ keypair::keypair(const std::string& secret)
 	, m_sec(secret)
 {
 	secp256k1_xonly_pubkey pubkey;
+	secp256k1_keypair keypair;
 	assert(secp256k1_context_randomize(m_secp256k1_ctx.get(), random(32).data()));
-	assert(secp256k1_keypair_create(m_secp256k1_ctx.get(), &m_secp256k1_keypair, m_sec.get()));
-	assert(secp256k1_keypair_xonly_pub(m_secp256k1_ctx.get(), &pubkey, nullptr, &m_secp256k1_keypair));
-	assert(secp256k1_xonly_pubkey_serialize(m_secp256k1_ctx.get(), m_pub.get(), &pubkey));
+	assert(secp256k1_keypair_create(m_secp256k1_ctx.get(), &keypair, m_sec.data()));
+	assert(secp256k1_keypair_xonly_pub(m_secp256k1_ctx.get(), &pubkey, nullptr, &keypair));
+	assert(secp256k1_xonly_pubkey_serialize(m_secp256k1_ctx.get(), m_pub.data(), &pubkey));
 }
 
 }
