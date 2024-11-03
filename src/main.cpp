@@ -20,6 +20,7 @@
 
 #include "key.h"
 #include "commands/convert_cmd.h"
+#include "commands/keypair_cmd.h"
 
 namespace beast = boost::beast;         // from <boost/beast.hpp>
 namespace base64 = beast::detail::base64;         // from <boost/beast/core/detail/base64.hpp>
@@ -43,7 +44,8 @@ int main(int argc, char* argv[])
 	try
 	{
 		std::map<std::string, std::shared_ptr<sonos::command>> commands = {
-			{"convert", std::make_shared<sonos::convert_cmd>()}//,
+			{"convert", std::make_shared<sonos::convert_cmd>()},
+			{"keypair", std::make_shared<sonos::keypair_cmd>()}//,
 		};
 
 		auto cmd = commands[argv[1]];

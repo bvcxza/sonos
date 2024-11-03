@@ -9,9 +9,9 @@
 namespace sonos
 {
 
-keypair::keypair(const std::string& secret)
+keypair::keypair(key&& secret_key)
 	: m_secp256k1_ctx(secp256k1_context_create(SECP256K1_CONTEXT_NONE), &secp256k1_context_destroy)
-	, m_sec(secret)
+	, m_sec(secret_key)
 {
 	secp256k1_xonly_pubkey pubkey;
 	secp256k1_keypair keypair;
@@ -20,5 +20,9 @@ keypair::keypair(const std::string& secret)
 	assert(secp256k1_keypair_xonly_pub(m_secp256k1_ctx.get(), &pubkey, nullptr, &keypair));
 	assert(secp256k1_xonly_pubkey_serialize(m_secp256k1_ctx.get(), m_pub.data(), &pubkey));
 }
+
+keypair::keypair(std::vector<uint8_t>&& secret_data) : keypair(key(std::move(secret_data))) {}
+
+keypair::keypair(const std::string& secret) : keypair(key(secret)) {}
 
 }

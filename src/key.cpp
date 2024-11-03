@@ -30,6 +30,8 @@ key::key(const std::string& key)
 	assert(to_hex().size() == (size() * 2));
 }
 
+key::key(std::vector<uint8_t>&& data) : m_data(std::move(data)) {}
+
 std::string key::to_hex() const
 {
 	std::string to;

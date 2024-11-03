@@ -12,6 +12,7 @@ class key
 public:
 	key() = default;
 	key(const std::string& key);
+	key(std::vector<uint8_t>&& data);
 	auto size() const { return m_data.size(); }
 	auto data() const { return m_data.data(); }
 	auto data() { m_data.resize(32); return m_data.data(); }
