@@ -18,7 +18,7 @@ public:
 	auto data() { m_data.resize(32); return m_data.data(); }
 	std::string to_hex() const;
 	std::string to_bech32(const std::string& hrp) const;
-private:
+protected:
 	std::vector<uint8_t> m_data;
 };
 

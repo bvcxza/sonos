@@ -32,6 +32,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	external/bech32/ref/c++/bech32.cpp
 	src/utils.cpp
 	src/key.cpp
+	src/pubkey.cpp
 	src/keypair.cpp
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE

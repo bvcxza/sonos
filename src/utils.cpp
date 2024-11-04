@@ -3,6 +3,9 @@
 #include <random>
 #include <vector>
 
+#include <boost/algorithm/hex.hpp>
+#include <openssl/sha.h>
+
 namespace sonos
 {
 
@@ -29,6 +32,16 @@ std::vector<uint8_t> random(size_t length)
 		out.push_back(static_cast<uint8_t>(distrib(gen)));
 
 	return out;
+}
+
+std::string hash32(const std::string& msg)
+{
+	std::vector<uint8_t> msg_hash;
+	msg_hash.resize(32);
+	SHA256(reinterpret_cast<const uint8_t*>(msg.data()), msg.size(), msg_hash.data());
+	std::string to;
+	boost::algorithm::hex_lower(msg_hash.begin(), msg_hash.end(), std::back_inserter(to));
+	return to;
 }
 
 }
