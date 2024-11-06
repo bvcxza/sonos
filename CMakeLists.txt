@@ -34,6 +34,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	src/key.cpp
 	src/pubkey.cpp
 	src/keypair.cpp
+	src/nostr.cpp
 )
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	${OPENSSL_INCLUDE_DIR}
@@ -97,6 +98,21 @@ target_link_libraries(KeyPairTest
 )
 gtest_discover_tests(KeyPairTest)
 # KeyPairTest <
+
+# NostrTest >
+add_executable(NostrTest test/nostr_test.cpp)
+target_include_directories(NostrTest PRIVATE
+	include
+	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+)
+target_link_libraries(NostrTest
+	GTest::GTest
+	GTest::Main
+	${CMAKE_PROJECT_NAME}
+#	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
+)
+gtest_discover_tests(NostrTest)
+# NostrTest <
 
 message(STATUS "Summary of build options:
 	CXX compiler:                 ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})

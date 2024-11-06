@@ -15,6 +15,8 @@ std::vector<uint8_t> random(size_t length);
 
 std::string sha256(const std::string& msg);
 
+uint64_t timestamp();
+
 /** Convert from one power-of-2 number base to another. */
 template<int frombits, int tobits, bool pad = false>
 std::vector<uint8_t> convertbits(const std::vector<uint8_t>& in)

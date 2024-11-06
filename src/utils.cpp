@@ -1,5 +1,6 @@
 #include "utils.h"
 
+#include <chrono>
 #include <random>
 #include <vector>
 
@@ -42,6 +43,12 @@ std::string sha256(const std::string& msg)
 	std::string to;
 	boost::algorithm::hex_lower(msg_hash.begin(), msg_hash.end(), std::back_inserter(to));
 	return to;
+}
+
+uint64_t timestamp()
+{
+	const auto p1 = std::chrono::system_clock::now();
+	return std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
 }
 
 }
