@@ -13,7 +13,7 @@ bool replaceAll(std::string& inout, const std::map<std::string_view,std::string_
 
 std::vector<uint8_t> random(size_t length);
 
-std::string hash32(const std::string& msg);
+std::string sha256(const std::string& msg);
 
 /** Convert from one power-of-2 number base to another. */
 template<int frombits, int tobits, bool pad = false>

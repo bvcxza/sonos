@@ -34,7 +34,7 @@ std::vector<uint8_t> random(size_t length)
 	return out;
 }
 
-std::string hash32(const std::string& msg)
+std::string sha256(const std::string& msg)
 {
 	std::vector<uint8_t> msg_hash;
 	msg_hash.resize(32);
