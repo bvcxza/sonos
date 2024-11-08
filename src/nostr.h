@@ -15,6 +15,7 @@ public:
 	nostr(keypair&& keypair) : m_keypair(std::move(keypair)) {}
 
 	std::string make_event(uint16_t kind, const std::string& content) const;
+	bool verify(const std::string& event) const;
 
 private:
 	keypair m_keypair;

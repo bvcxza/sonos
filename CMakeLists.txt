@@ -24,7 +24,7 @@ find_package(Threads REQUIRED)
 cmake_policy(SET CMP0167 NEW)
 set(Boost_VERBOSE ON)
 set(Boost_USE_MULTITHREADED ON)
-find_package(Boost 1.73 REQUIRED)
+find_package(Boost 1.73 REQUIRED json)
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 
 add_library(${CMAKE_PROJECT_NAME})
@@ -50,6 +50,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 add_executable(main_ex
 	src/commands/convert_cmd.cpp
+	src/commands/event_cmd.cpp
 	src/commands/keypair_cmd.cpp
 	src/main.cpp
 )
@@ -94,7 +95,6 @@ target_link_libraries(KeyPairTest
 	GTest::GTest
 	GTest::Main
 	${CMAKE_PROJECT_NAME}
-#	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
 )
 gtest_discover_tests(KeyPairTest)
 # KeyPairTest <
@@ -109,7 +109,7 @@ target_link_libraries(NostrTest
 	GTest::GTest
 	GTest::Main
 	${CMAKE_PROJECT_NAME}
-#	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
+	Boost::json
 )
 gtest_discover_tests(NostrTest)
 # NostrTest <
