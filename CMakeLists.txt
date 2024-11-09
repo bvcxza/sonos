@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(NOT MSVC)
+	add_compile_options("-Wall" "-Wextra" "-Werror" "$<$<CONFIG:RELEASE>:-O3>")
+endif()
+
 message(STATUS "Build environment:
 	System processor: ${CMAKE_SYSTEM_PROCESSOR}
 	CXX compiler:     ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})
