@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 
+#include <boost/algorithm/string/join.hpp>
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
@@ -28,12 +29,15 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 std::string event_cmd::help() const
 {
-	return "create and send a event to nostr relays";
+	return R"(
+		Create and send a event to nostr relays.
+		Usage: echo "content" | sonos event <nsec> <kind>
+	)";
 }
 
 bool event_cmd::execute(int argc, char* argv[])
 {
-	if (argc < 3) return false;
+	if (argc != 4) return false;
 
 	try
 	{
@@ -66,7 +70,14 @@ bool event_cmd::execute(int argc, char* argv[])
 		}));
 
 		nostr nstr { argv[2] };
-		std::string event = nstr.make_event(1, "hi nostr!!");
+
+		uint16_t kind = std::atoi(argv[3]);
+		//user metadata : {name: <username>, about: <string>, picture: <url, string>}
+		std::vector<std::string> lines;
+		for (std::string line; std::getline(std::cin, line); lines.push_back(line));
+		std::string content = boost::algorithm::join(lines, "\\n");
+
+		std::string event = nstr.make_event(kind, content);
 		host += ':' + std::to_string(ep.port());
 		std::cout << "handshaking to " << host << std::endl;
 		ws.handshake(host, "/");
