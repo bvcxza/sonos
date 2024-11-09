@@ -11,7 +11,7 @@ namespace sonos
 
 bool replaceAll(std::string& inout, const std::map<std::string_view,std::string_view>& map);
 
-std::vector<uint8_t> random(size_t length);
+std::vector<uint8_t> random(uint16_t length);
 
 std::string sha256(const std::string& msg);
 
