@@ -17,6 +17,8 @@ std::string sha256(const std::string& msg);
 
 uint64_t timestamp();
 
+std::pair<std::string,std::string> split_pair(const std::string& str, char delim);
+
 /** Convert from one power-of-2 number base to another. */
 template<int frombits, int tobits, bool pad = false>
 std::vector<uint8_t> convertbits(const std::vector<uint8_t>& in)

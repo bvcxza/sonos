@@ -31,13 +31,13 @@ std::string event_cmd::help() const
 {
 	return R"(
 		Create and send a event to nostr relays.
-		Usage: echo "content" | sonos event <nsec> <kind>
+		Usage: echo "content" | sonos event <nsec> <kind> <relay_addresses ...>
 	)";
 }
 
 bool event_cmd::execute(int argc, char* argv[])
 {
-	if (argc != 4) return false;
+	if (argc < 5) return false;
 
 	try
 	{
@@ -46,11 +46,10 @@ bool event_cmd::execute(int argc, char* argv[])
 		ctx.set_default_verify_paths();
 		tcp::resolver resolver{ioc};
 		websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-		std::string host = "nostr.bitcoiner.social";
-		//std::string host = "echo.websocket.org";
-		const char* port = "443";
+		std::string host_address = argv[4];
+		auto&& [host, port] = split_pair(host_address, ':');
 		auto const results = resolver.resolve(host, port);
-		auto ep = net::connect(beast::get_lowest_layer(ws), results);
+		net::connect(beast::get_lowest_layer(ws), results);
 
 		if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
 			throw beast::system_error(
@@ -78,9 +77,8 @@ bool event_cmd::execute(int argc, char* argv[])
 		std::string content = boost::algorithm::join(lines, "\\n");
 
 		std::string event = nstr.make_event(kind, content);
-		host += ':' + std::to_string(ep.port());
-		std::cout << "handshaking to " << host << std::endl;
-		ws.handshake(host, "/");
+		std::cout << "handshaking to " << host_address << std::endl;
+		ws.handshake(host_address, "/");
 		ws.write(net::buffer(event));
 		std::cout << "write: " << event << std::endl;
 		beast::flat_buffer buffer;

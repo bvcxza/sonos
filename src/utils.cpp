@@ -1,7 +1,9 @@
 #include "utils.h"
 
 #include <chrono>
+#include <sstream>
 #include <random>
+#include <utility>
 #include <vector>
 
 #include <boost/algorithm/hex.hpp>
@@ -49,6 +51,15 @@ uint64_t timestamp()
 {
 	const auto p1 = std::chrono::system_clock::now();
 	return std::chrono::duration_cast<std::chrono::seconds>(p1.time_since_epoch()).count();
+}
+
+std::pair<std::string,std::string> split_pair(const std::string& str, char delim)
+{
+	std::istringstream ss {str};
+	std::pair<std::string,std::string> str_pair;
+	std::getline(ss, str_pair.first, delim);
+	std::getline(ss, str_pair.second);
+	return str_pair;
 }
 
 }
