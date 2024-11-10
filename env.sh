@@ -23,7 +23,7 @@ bld_secp256k1()
 cnf()
 {
 	[[ -d build ]] || mkdir build
-	(cd build && cmake --fresh -G Ninja ..)
+	(cd build && cmake --fresh -G Ninja $@ ..)
 }
 
 bld()

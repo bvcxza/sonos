@@ -118,10 +118,14 @@ target_link_libraries(NostrTest
 gtest_discover_tests(NostrTest)
 # NostrTest <
 
+# Install
+install(TARGETS ${CMAKE_PROJECT_NAME} main_ex)
+
 message(STATUS "Summary of build options:
 	CXX compiler:                 ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})
 	C_FLAGS:                      ${CMAKE_C_FLAGS}
 	CXX_FLAGS:                    ${CMAKE_CXX_FLAGS}
 	CMAKE_EXE_LINKER_FLAGS:       ${CMAKE_EXE_LINKER_FLAGS}
 	CMAKE_THREAD_LIBS_INIT        ${CMAKE_THREAD_LIBS_INIT}
+	CMAKE_INSTALL_PREFIX          ${CMAKE_INSTALL_PREFIX}
 ")
