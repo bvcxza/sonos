@@ -5,22 +5,22 @@
 
 TEST(KeyPairTest, FromBech32)
 {
-	sonos::keypair keypair { "nsec1ceu08vm0wjxa2u42x2z62jwwupx7zg56c8z6q8mq6audh9eg0gps4w7064" };
-  EXPECT_EQ("f281c55cc7ad079745678c870d840c01c4dff42a5f5534b4392e701b8e17d79f", keypair.pub().to_hex());
+	sonos::keypair keypair { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
+	EXPECT_EQ("db268f11cc8edc105dab376fd9b790103058606f0719f818f96a6b986909341c", keypair.pub().to_hex());
 }
 
 TEST(KeyPairTest, Hash)
 {
-	sonos::keypair keypair { "nsec1ceu08vm0wjxa2u42x2z62jwwupx7zg56c8z6q8mq6audh9eg0gps4w7064" };
+	sonos::keypair keypair { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
 	// [0,<pubkey, as a lowercase hex string>,<created_at, as a number>,<kind, as a number>,<tags, as an array of arrays of non-null strings>,<content, as a string>]
-	std::string msg = R"([0,"f281c55cc7ad079745678c870d840c01c4dff42a5f5534b4392e701b8e17d79f",1729681424,1,[],"hi nostr"])";
-  EXPECT_EQ("3867e83395d0885f6898111d595fa9fff1f20352deea4f1994fed0ec1578e5c1", sonos::sha256(msg));
+	std::string msg = R"([0,"db268f11cc8edc105dab376fd9b790103058606f0719f818f96a6b986909341c",1729681424,1,[],"hi nostr"])";
+	EXPECT_EQ("1ce54ff78da19d02dae3b6a7dd4fc3581b76e660e83c36ceda4becb4432a128d", sonos::sha256(msg));
 }
 
 TEST(KeyPairTest, HashAndSign)
 {
-	sonos::keypair keypair { "nsec1ceu08vm0wjxa2u42x2z62jwwupx7zg56c8z6q8mq6audh9eg0gps4w7064" };
-	std::string msg = R"([0,"f281c55cc7ad079745678c870d840c01c4dff42a5f5534b4392e701b8e17d79f",1729681424,1,[],"hi nostr"])";
+	sonos::keypair keypair { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
+	std::string msg = R"([0,"db268f11cc8edc105dab376fd9b790103058606f0719f818f96a6b986909341c",1729681424,1,[],"hi nostr"])";
 	auto hash = sonos::sha256(msg);
 	ASSERT_EQ(64, hash.size());
 	auto signature = keypair.sign(hash);
@@ -30,7 +30,7 @@ TEST(KeyPairTest, HashAndSign)
 
 TEST(KeyPairTest, Sign)
 {
-	sonos::keypair keypair { "nsec1ceu08vm0wjxa2u42x2z62jwwupx7zg56c8z6q8mq6audh9eg0gps4w7064" };
+	sonos::keypair keypair { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
 	std::string msg = "3867e83395d0885f6898111d595fa9fff1f20352deea4f1994fed0ec1578e5c1";
 	auto signature = keypair.sign(msg);
 	ASSERT_EQ(128, signature.size());

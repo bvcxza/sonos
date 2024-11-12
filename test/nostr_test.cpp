@@ -19,8 +19,8 @@ TEST(NostrTest, MakeEvent)
 	"sig":"${sig}"
 }])";
 
-  sonos::nostr nostr { "nsec1ceu08vm0wjxa2u42x2z62jwwupx7zg56c8z6q8mq6audh9eg0gps4w7064" };
-  auto&& event = nostr.make_event(1, "content as string");
+	sonos::nostr nostr { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
+	auto&& event = nostr.make_event(1, "content as string");
 	value vjson = parse(event);
 	auto&& evt_array = vjson.as_array();
 	assert(evt_array.size() == 2);
@@ -34,12 +34,12 @@ TEST(NostrTest, MakeEvent)
 	});
 	ASSERT_TRUE(result);
 
-  ASSERT_EQ(expected_event, event);
+	ASSERT_EQ(expected_event, event);
 }
 
 TEST(NostrTest, Verify)
 {
-  sonos::nostr nostr { "nsec1ceu08vm0wjxa2u42x2z62jwwupx7zg56c8z6q8mq6audh9eg0gps4w7064" };
-  EXPECT_TRUE(nostr.verify(nostr.make_event(1, "content as string")));
+	sonos::nostr nostr { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
+	EXPECT_TRUE(nostr.verify(nostr.make_event(1, "content as string")));
 }
 
