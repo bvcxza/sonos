@@ -11,27 +11,39 @@
 
 //------------------------------------------------------------------------------
 
+void show_help(auto&& commands)
+{
+	std::cerr << "Commands:\n";
+	for (auto&& [name,cmd] : commands)
+	{
+		std::cerr << '\n' << name << ":\n";
+		std::cerr << cmd->help();
+	}
+	std::cerr << std::endl;
+};
+
 int main(int argc, char* argv[])
 {
-	// Check command line arguments.
-	if (argc < 2)
-	{
-		std::cerr << "EXIT_FAILURE\n";
-		return EXIT_FAILURE;
-	}
-
 	std::map<std::string, std::shared_ptr<sonos::command>> commands = {
 		{"convert", std::make_shared<sonos::convert_cmd>()},
 		{"event", std::make_shared<sonos::event_cmd>()},
 		{"keypair", std::make_shared<sonos::keypair_cmd>()}//,
 	};
 
-	auto cmd = commands[argv[1]];
-	if (!cmd)
+	// Check command line arguments.
+	if (argc < 2)
 	{
-		std::cerr << argv[0] << " Error: " << "TODO help" << std::endl;
+		show_help(commands);
 		return EXIT_FAILURE;
 	}
+
+	if (!commands.contains(argv[1]))
+	{
+		std::cerr << argv[0] << " Command not found: " << argv[1] << '\n';
+		show_help(commands);
+		return EXIT_FAILURE;
+	}
+	auto cmd = commands[argv[1]];
 	try
 	{
 		if (!cmd->execute(argc, argv))

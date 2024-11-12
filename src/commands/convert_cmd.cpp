@@ -9,7 +9,11 @@ namespace sonos
 
 std::string convert_cmd::help() const
 {
-	return "convert bech32 addresses (npub1 and nsec1) to/from hexadecimal string";
+	return R"(
+		Convert bech32 addresses (npub1 and nsec1) to/from hexadecimal string.
+		Usage: sonos convert <bech32 address>
+		Usage: sonos convert <hex address> <hrp:npub or nsec>
+	)";
 }
 
 bool convert_cmd::execute(int argc, char* argv[])

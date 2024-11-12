@@ -10,7 +10,10 @@ namespace sonos
 
 std::string keypair_cmd::help() const
 {
-	return "create or show keypair from hexadecimal/bech32 string";
+	return R"(
+		Create or show keypair from hexadecimal/bech32 secret string
+		Usage: sonos keypair [secret]
+	)";
 }
 
 bool keypair_cmd::execute(int argc, char* argv[])
