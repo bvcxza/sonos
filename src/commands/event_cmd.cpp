@@ -31,13 +31,13 @@ std::string event_cmd::help() const
 {
 	return R"(
 		Create and send a event to nostr relays.
-		Usage: echo "content" | sonos event <nsec> <kind> <relay_addresses ...>
+		Usage: echo "content" | sonos event <nsec> <kind> <tags> <relay_addresses ...>
 	)";
 }
 
 bool event_cmd::execute(int argc, char* argv[])
 {
-	if (argc < 5) return false;
+	if (argc < 6) return false;
 
 	try
 	{
@@ -46,7 +46,7 @@ bool event_cmd::execute(int argc, char* argv[])
 		ctx.set_default_verify_paths();
 		tcp::resolver resolver{ioc};
 		websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-		std::string host_address = argv[4];
+		std::string host_address = argv[5];
 		auto&& [host, port] = split_pair(host_address, ':');
 		auto const results = resolver.resolve(host, port);
 		net::connect(beast::get_lowest_layer(ws), results);
@@ -71,12 +71,13 @@ bool event_cmd::execute(int argc, char* argv[])
 		nostr nstr { argv[2] };
 
 		uint16_t kind = std::atoi(argv[3]);
+		std::string tags = argv[4];
 		//user metadata : {name: <username>, about: <string>, picture: <url, string>}
 		std::vector<std::string> lines;
 		for (std::string line; std::getline(std::cin, line); lines.push_back(line));
 		std::string content = boost::algorithm::join(lines, "\\n");
 
-		std::string event = nstr.make_event(kind, content);
+		std::string event = nstr.make_event(kind, content, tags);
 		std::cout << "handshaking to " << host_address << std::endl;
 		ws.handshake(host_address, "/");
 		ws.write(net::buffer(event));

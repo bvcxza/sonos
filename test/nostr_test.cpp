@@ -14,13 +14,13 @@ TEST(NostrTest, MakeEvent)
 	"pubkey":"${pubkey}",
 	"created_at":${created_at},
 	"kind":1,
-	"tags":[],
+	"tags":[["t","NOSTR"],["t","nostr"]],
 	"content":"content as string",
 	"sig":"${sig}"
 }])";
 
 	sonos::nostr nostr { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
-	auto&& event = nostr.make_event(1, "content as string");
+	auto&& event = nostr.make_event(1, "content as string", R"(["t","NOSTR"],["t","nostr"])");
 	value vjson = parse(event);
 	auto&& evt_array = vjson.as_array();
 	assert(evt_array.size() == 2);
@@ -41,5 +41,11 @@ TEST(NostrTest, Verify)
 {
 	sonos::nostr nostr { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
 	EXPECT_TRUE(nostr.verify(nostr.make_event(1, "content as string")));
+}
+
+TEST(NostrTest, VerifyWithTags)
+{
+	sonos::nostr nostr { "nsec182frsrgf50ktzfjj7jk4d9374e8ydqjcaugnvrhfnf4lyuca5ans90fyhf" };
+	EXPECT_TRUE(nostr.verify(nostr.make_event(1, "content as string", R"(["t","NOSTR"],["t","nostr"])")));
 }
 
