@@ -56,6 +56,7 @@ add_executable(main_ex
 	src/commands/convert_cmd.cpp
 	src/commands/event_cmd.cpp
 	src/commands/keypair_cmd.cpp
+	src/commands/req_cmd.cpp
 	src/main.cpp
 )
 set_property(TARGET main_ex PROPERTY OUTPUT_NAME ${CMAKE_PROJECT_NAME})

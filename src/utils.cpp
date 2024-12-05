@@ -37,13 +37,13 @@ std::vector<uint8_t> random(uint16_t length)
 	return out;
 }
 
-std::string sha256(const std::string& msg)
+std::string sha256(const uint8_t* data, size_t size)
 {
-	std::vector<uint8_t> msg_hash;
-	msg_hash.resize(32);
-	SHA256(reinterpret_cast<const uint8_t*>(msg.data()), msg.size(), msg_hash.data());
+	std::vector<uint8_t> hash;
+	hash.resize(32);
+	SHA256(data, size, hash.data());
 	std::string to;
-	boost::algorithm::hex_lower(msg_hash.begin(), msg_hash.end(), std::back_inserter(to));
+	boost::algorithm::hex_lower(hash.begin(), hash.end(), std::back_inserter(to));
 	return to;
 }
 

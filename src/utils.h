@@ -13,11 +13,17 @@ bool replaceAll(std::string& inout, const std::map<std::string_view,std::string_
 
 std::vector<uint8_t> random(uint16_t length);
 
-std::string sha256(const std::string& msg);
-
 uint64_t timestamp();
 
 std::pair<std::string,std::string> split_pair(const std::string& str, char delim);
+
+std::string sha256(const uint8_t* data, size_t size);
+
+template <class T>
+std::string sha256(const T& msg)
+{
+	return sha256(reinterpret_cast<const uint8_t*>(msg.data()), msg.size());
+}
 
 /** Convert from one power-of-2 number base to another. */
 template<int frombits, int tobits, bool pad = false>
