@@ -1,7 +1,8 @@
 #include "req_cmd.h"
 
-#include <csignal>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
@@ -12,6 +13,7 @@
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/json.hpp>
 
 #include "../utils.h"
 
@@ -28,23 +30,24 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 std::string req_cmd::help() const
 {
 	return R"(
-		Send a REQ message to nostr relays and listener for events.
-		Usage: sonos req <filters> <relay_addresses ...>
+		Send a REQ message to nostr relays and execute a command for each readed event.
+		Usage: sonos req <filters> <command> <relay_addresses ...>
 	)";
 }
 
 bool req_cmd::execute(int argc, char* argv[])
 {
-	if (argc < 4) return false;
+	if (argc < 5) return false;
 
 	try
 	{
+		using namespace boost::json;
 		net::io_context ioc;
 		ssl::context ctx{ssl::context::tlsv12_client};
 		ctx.set_default_verify_paths();
 		tcp::resolver resolver{ioc};
 		static websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-		std::string host_address = argv[3];
+		std::string host_address = argv[4];
 		auto&& [host, port] = split_pair(host_address, ':');
 		auto const results = resolver.resolve(host, port);
 		net::connect(beast::get_lowest_layer(ws), results);
@@ -69,31 +72,31 @@ bool req_cmd::execute(int argc, char* argv[])
 		// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
 		static std::string subscription_id = sha256(random(8));
 		std::string filters = argv[2];
+		std::string command = argv[3];
 		std::string req_msg = R"(["REQ","${subscription_id}",${filters}])";
-		bool result = replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${filters}",filters}});
-		assert(result);
+		assert(replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${filters}",filters}}));
 		std::cout << "req_msg: " << req_msg << std::endl;
 		std::cout << "handshaking to " << host_address << std::endl;
 		ws.handshake(host_address, "/");
-		auto handler = [](int signal){
-			std::string close_msg = R"(["CLOSE", "${subscription_id}"])";
-			assert(replaceAll(close_msg, {{"${subscription_id}",subscription_id}}));
-			ws.write(net::buffer(close_msg));
-			ws.close(websocket::close_code::normal);
-			std::cout << "closed: " << close_msg << " by signal " << signal << std::endl;
-		};
-		std::signal(SIGTERM,handler);
-		std::signal(SIGINT,handler);
 		ws.write(net::buffer(req_msg));
+		auto in_file_name = "sonos" + subscription_id;
+		std::filesystem::path in_file_path = std::filesystem::temp_directory_path() / in_file_name;
+		std::string fullCmd = "${command} ${in_file_path}";
+		assert(replaceAll(fullCmd, {{"${command}",command},{"${in_file_path}",in_file_path.string()}}));
 		for (;ws.is_open();)
 		{
-			try
+			beast::flat_buffer buffer;
+			ws.read(buffer);
+			value vjson = parse(beast::buffers_to_string(buffer.data()));
+			auto&& evt_array = vjson.as_array();
+			if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")
 			{
-				beast::flat_buffer buffer;
-				ws.read(buffer);
-				std::cout << "read: " << beast::make_printable(buffer.data()) << std::endl;
+				std::ofstream out(in_file_path);
+				out << serialize(evt_array[2].as_object());
+				out.close();
+				std::cout << "command: " << fullCmd << std::endl;
+				std::system(fullCmd.c_str());
 			}
-			catch (const boost::system::system_error&) {}
 		}
 	}
 	catch(const std::exception& e)

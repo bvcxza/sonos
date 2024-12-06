@@ -50,6 +50,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 	Threads::Threads
 	${OPENSSL_LIBRARIES}
 	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
+	Boost::json
 )
 
 add_executable(main_ex
@@ -71,6 +72,7 @@ target_link_libraries(main_ex
 	${OPENSSL_LIBRARIES}
 	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
 	${CMAKE_PROJECT_NAME}
+	Boost::json
 )
 
 # Tests

@@ -3,7 +3,7 @@
 #include <cassert>
 #include <map>
 
-#include <boost/json/src.hpp>
+#include <boost/json.hpp>
 
 #include "utils.h"
 
