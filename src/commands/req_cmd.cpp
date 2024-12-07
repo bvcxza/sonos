@@ -30,7 +30,8 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 std::string req_cmd::help() const
 {
 	return R"(
-		Send a REQ message to nostr relays and execute a command for each readed event.
+		Send a REQ message to nostr relays and execute a external command for each received event.
+		The program called by command receives the event JSON file path as the first parameter ($1 in bash).
 		Usage: sonos req <filters> <command> <relay_addresses ...>
 	)";
 }

@@ -24,6 +24,22 @@ bld_secp256k1 && cnf -DCMAKE_INSTALL_PREFIX=~/.local && bld install
 
 Just enter `sonos` to show usage.
 
+### Send a REQ and handle events with external program
+
+```
+sonos req
+
+		Send a REQ message to nostr relays and execute a external command for each received event.
+		The program called by command receives the event JSON file path as the first parameter ($1 in bash).
+		Usage: sonos req <filters> <command> <relay_addresses ...>
+```
+
+Example: Call a [bash script](samples/script.sh) for each event with tag "Monero".
+
+```
+sonos req '{"kinds":[1],"#t":["Monero"],"limit":0}' ./samples/script.sh nostr.bitcoiner.social:443
+```
+
 ## For developers
 
 ### Build and Test
