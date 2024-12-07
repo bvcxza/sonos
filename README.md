@@ -34,7 +34,7 @@ sonos req
 		Usage: sonos req <filters> <command> <relay_addresses ...>
 ```
 
-Example: Call a [bash script](samples/script.sh) for each event with tag "Monero".
+Example: Call a [bash script](samples/script.sh) for each [event](https://github.com/nostr-protocol/nips/blob/master/01.md#events-and-signatures) with tag "Monero".
 
 ```
 sonos req '{"kinds":[1],"#t":["Monero"],"limit":0}' ./samples/script.sh nostr.bitcoiner.social:443
