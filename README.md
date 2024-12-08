@@ -24,6 +24,32 @@ bld_secp256k1 && cnf -DCMAKE_INSTALL_PREFIX=~/.local && bld install
 
 Just enter `sonos` to show usage.
 
+```
+Commands:
+
+convert:
+
+		Convert bech32 addresses (npub1 and nsec1) to/from hexadecimal string.
+		Usage: sonos convert <bech32 address>
+		Usage: sonos convert <hex address> <hrp:npub or nsec>
+
+event:
+
+		Create and send a event to nostr relays.
+		Usage: echo "content" | sonos event <nsec> <kind> <tags> <relay_addresses ...>
+
+keypair:
+
+		Create or show keypair from hexadecimal/bech32 secret string
+		Usage: sonos keypair [secret]
+
+req:
+
+		Send a REQ message to nostr relays and execute a external command for each received event.
+		The program called by command receives the event JSON file path as the first parameter ($1 in bash).
+		Usage: sonos req <filters> <command> <relay_addresses ...>
+```
+
 ### Send a REQ and handle events with external program
 
 ```
