@@ -9,6 +9,7 @@
 #include "commands/event_cmd.h"
 #include "commands/keypair_cmd.h"
 #include "commands/req_cmd.h"
+#include "commands/user_cmd.h"
 
 //------------------------------------------------------------------------------
 
@@ -29,7 +30,8 @@ int main(int argc, char* argv[])
 		{"convert", std::make_shared<sonos::convert_cmd>()},
 		{"event", std::make_shared<sonos::event_cmd>()},
 		{"keypair", std::make_shared<sonos::keypair_cmd>()},
-		{"req", std::make_shared<sonos::req_cmd>()}//,
+		{"req", std::make_shared<sonos::req_cmd>()},
+		{"user", std::make_shared<sonos::user_cmd>()}//,
 	};
 
 	// Check command line arguments.
@@ -60,6 +62,5 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	std::cout << argv[0] << " EXIT_SUCCESS\n";
 	return EXIT_SUCCESS;
 }

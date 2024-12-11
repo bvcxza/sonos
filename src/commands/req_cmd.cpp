@@ -31,7 +31,8 @@ std::string req_cmd::help() const
 {
 	return R"(
 		Send a REQ message to nostr relays and execute a external command for each received event.
-		The program called by command receives the event JSON file path as the first parameter ($1 in bash).
+		The program called by command receives the event JSON file path as the first parameter ($1 in bash)
+		and origin relay address ($2 in bash).
 		Usage: sonos req <filters> <command> <relay_addresses ...>
 	)";
 }
@@ -47,7 +48,7 @@ bool req_cmd::execute(int argc, char* argv[])
 		ssl::context ctx{ssl::context::tlsv12_client};
 		ctx.set_default_verify_paths();
 		tcp::resolver resolver{ioc};
-		static websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
+		websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
 		std::string host_address = argv[4];
 		auto&& [host, port] = split_pair(host_address, ':');
 		auto const results = resolver.resolve(host, port);
@@ -71,7 +72,7 @@ bool req_cmd::execute(int argc, char* argv[])
 		}));
 
 		// ["REQ", <subscription_id>, <filters1>, <filters2>, ...]
-		static std::string subscription_id = sha256(random(8));
+		std::string subscription_id = sha256(random(8));
 		std::string filters = argv[2];
 		std::string command = argv[3];
 		std::string req_msg = R"(["REQ","${subscription_id}",${filters}])";
@@ -82,8 +83,8 @@ bool req_cmd::execute(int argc, char* argv[])
 		ws.write(net::buffer(req_msg));
 		auto in_file_name = "sonos" + subscription_id;
 		std::filesystem::path in_file_path = std::filesystem::temp_directory_path() / in_file_name;
-		std::string fullCmd = "${command} ${in_file_path}";
-		assert(replaceAll(fullCmd, {{"${command}",command},{"${in_file_path}",in_file_path.string()}}));
+		std::string fullCmd = "${command} ${in_file_path} ${host_address}";
+		assert(replaceAll(fullCmd, {{"${command}",command},{"${in_file_path}",in_file_path.string()},{"${host_address}",host_address}}));
 		for (;ws.is_open();)
 		{
 			beast::flat_buffer buffer;
@@ -102,7 +103,7 @@ bool req_cmd::execute(int argc, char* argv[])
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << argv[0] << ' ' << argv[1] << ' ' << argv[2] << " Error: " << e.what() << std::endl;
+		std::cerr << argv[0] << ' ' << argv[1] << ' ' << argv[2] << ' ' << argv[3] << ' ' << argv[4] << " Error: " << e.what() << std::endl;
 		return false;;
 	}
 
