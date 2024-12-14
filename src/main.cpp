@@ -8,6 +8,7 @@
 #include "commands/convert_cmd.h"
 #include "commands/event_cmd.h"
 #include "commands/keypair_cmd.h"
+#include "commands/relays_cmd.h"
 #include "commands/req_cmd.h"
 #include "commands/user_cmd.h"
 
@@ -30,6 +31,7 @@ int main(int argc, char* argv[])
 		{"convert", std::make_shared<sonos::convert_cmd>()},
 		{"event", std::make_shared<sonos::event_cmd>()},
 		{"keypair", std::make_shared<sonos::keypair_cmd>()},
+		{"relays", std::make_shared<sonos::relays_cmd>()},
 		{"req", std::make_shared<sonos::req_cmd>()},
 		{"user", std::make_shared<sonos::user_cmd>()}//,
 	};
