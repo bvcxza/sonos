@@ -54,6 +54,7 @@ bool relays_cmd::execute(int argc, char* argv[])
 			pubkey pub_key { argv[3] };
 			assert(replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${pub_key}",pub_key.to_hex()}}));
 		}
+		bool result = true;
 		for (int i = 4; i < argc; ++i)
 		{
 			std::string host_address = argv[i];
@@ -120,11 +121,12 @@ bool relays_cmd::execute(int argc, char* argv[])
 			}
 			catch (const std::exception& e)
 			{
+				result = false;
 				std::cerr << "Error [" << host_address << "]: " << e.what() << std::endl;
 				continue;
 			}
 		}
-		return false;
+		return result;
 	}
 	catch(const std::exception& e)
 	{
