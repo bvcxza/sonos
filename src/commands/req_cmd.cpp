@@ -1,6 +1,7 @@
 #include "req_cmd.h"
 
 #include <cstdlib>
+#include <condition_variable>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -10,7 +11,6 @@
 #include <string>
 #include <thread>
 #include <unordered_set>
-#include <vector>
 
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
@@ -66,32 +66,37 @@ bool req_cmd::execute(int argc, char* argv[])
 		}
 		std::mutex mutex;
 		std::unordered_set<std::string> evt_id_set; // TODO limit
-		auto handle_event = [&in_file_path,&fullCmd,&mutex,&evt_id_set](websocket::stream<ssl::stream<tcp::socket>>&& ws){
-			for (;ws.is_open();)
+		auto handle_event = [&in_file_path,&fullCmd,&mutex,&evt_id_set](websocket::stream<ssl::stream<tcp::socket>>&& ws, std::string&& host_address){
+			try
 			{
-				beast::flat_buffer buffer;
-				ws.read(buffer);
-				value vjson = parse(beast::buffers_to_string(buffer.data()));
-				auto&& evt_array = vjson.as_array();
-				if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")
+				for (;ws.is_open();)
 				{
-					std::scoped_lock lock(mutex);
-					auto&& evt_obj = evt_array[2].as_object();
-					auto&& evt_id = value_to<std::string>(evt_obj["id"]);
-					if (evt_id_set.contains(evt_id)) continue;
+					beast::flat_buffer buffer;
+					ws.read(buffer);
+					value vjson = parse(beast::buffers_to_string(buffer.data()));
+					auto&& evt_array = vjson.as_array();
+					if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")
+					{
+						std::scoped_lock lock(mutex);
+						auto&& evt_obj = evt_array[2].as_object();
+						auto&& evt_id = value_to<std::string>(evt_obj["id"]);
+						if (evt_id_set.contains(evt_id)) continue;
 
-					std::ofstream out(in_file_path);
-					out << serialize(evt_obj);
-					out.close();
-					std::cout << "command: " << fullCmd << std::endl;
-					std::system(fullCmd.c_str());
+						std::ofstream out(in_file_path);
+						out << serialize(evt_obj);
+						out.close();
+						std::cout << "command: " << fullCmd << std::endl;
+						std::system(fullCmd.c_str());
 
-					evt_id_set.insert(evt_id);
+						evt_id_set.insert(evt_id);
+					}
 				}
 			}
+			catch(const std::exception& e)
+			{
+				std::cerr << "Error [" << host_address << "] handle_event: " << e.what() << std::endl;
+			}
 		};
-		std::vector<std::thread> threads;
-		threads.reserve(argc - 4 - 1);
 		for (int i = 4; i < argc; ++i)
 		{
 			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
@@ -122,11 +127,11 @@ bool req_cmd::execute(int argc, char* argv[])
 			ws.handshake(host_address, "/");
 			ws.write(net::buffer(req_msg));
 
-			if (i < (argc - 1))
-				threads.emplace_back(handle_event, std::move(ws));
-			else // last job in current thread
-				handle_event(std::move(ws));
+			std::thread(handle_event, std::move(ws), std::move(host_address)).detach();
 		}
+		std::condition_variable cv;
+		std::unique_lock<std::mutex> lk(mutex);
+		cv.wait(lk);
 	}
 	catch(const std::exception& e)
 	{
