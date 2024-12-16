@@ -23,27 +23,26 @@ bld_secp256k1()
 cnf()
 {
 	[[ -d build ]] || mkdir build
-	(cd build && cmake --fresh -G Ninja $@ ..)
+	(cd build && cmake --fresh -G Ninja "$@" ..)
 }
 
 bld()
 {
 	[[ -d build ]] || cnf
-	(cd build && ninja $@)
+	(cd build && ninja "$@")
 }
 
 tst()
 {
 	[[ -d build ]] || bld
-	(cd build && ctest $@)
+	(cd build && ctest "$@")
 }
 
 run()
 {
 	[[ -d build ]] || bld
-	./build/sonos $@
+	./build/sonos "$@"
 }
 
 
-#export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:~/git/xmr/install
 export CMAKE_CXX_COMPILER_LAUNCHER=ccache
