@@ -43,11 +43,15 @@ keypair:
 	Create or show keypair from hexadecimal/bech32 secret string
 	Usage: sonos keypair [secret]
 
+relays:
+
+	Show user's relays from hexadecimal/bech32 public key.
+	Usage: sonos relays <read|write|all> <public_key> <relay_addresses ...>
+
 req:
 
 	Send a REQ message to nostr relays and execute a external command for each received event.
-	The program called by command receives the event JSON file path as the first parameter ($1 in bash)
-	and origin relay address ($2 in bash).
+	The program called by command receives the event JSON file path as the first parameter ($1 in bash).
 	Usage: sonos req <filters> <command> <relay_addresses ...>
 
 user:
