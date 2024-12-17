@@ -81,7 +81,7 @@ bool req_cmd::execute(int argc, char* argv[])
 					if (evt_id_set.contains(evt_id)) continue;
 
 					std::ofstream out(in_file_path);
-					out << serialize(evt_obj);
+					out << serialize(evt_obj) << std::endl;
 					out.close();
 					std::cout << "command: " << fullCmd << std::endl;
 					std::system(fullCmd.c_str());
@@ -95,6 +95,7 @@ bool req_cmd::execute(int argc, char* argv[])
 			std::cerr << "Error [" << host_address << "] handle_event: " << e.what() << std::endl;
 		}
 	};
+	std::cout << req_msg << std::endl;
 	for (int i = 4; i < argc; ++i)
 	{
 		websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
@@ -120,8 +121,7 @@ bool req_cmd::execute(int argc, char* argv[])
 				std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
 		}));
 
-		std::cout << "req_msg: " << req_msg << std::endl;
-		std::cout << "handshaking to " << host_address << std::endl;
+		std::cout << "=> " << host_address << std::endl;
 		ws.handshake(host_address, "/");
 		ws.write(net::buffer(req_msg));
 
