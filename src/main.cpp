@@ -54,13 +54,18 @@ int main(int argc, char* argv[])
 	{
 		if (!cmd->execute(argc, argv))
 		{
-			std::cerr << argv[0] << " Error\n" << cmd->help() << std::endl;
+			std::cerr << argv[0] << " Parameter Error\n" << cmd->help() << std::endl;
 			return EXIT_FAILURE;
 		}
 	}
+	catch (const sonos::command::error& e)
+	{
+		std::cerr << argv[0] << " Command Error: " << e.what() << std::endl;
+		return EXIT_FAILURE;
+	}
 	catch (const std::exception& e)
 	{
-		std::cerr << argv[0] << " Error: " << e.what() << '\n' << cmd->help() << std::endl;
+		std::cerr << argv[0] << " Unknown Error: " << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
 

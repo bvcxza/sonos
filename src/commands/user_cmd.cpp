@@ -37,80 +37,73 @@ bool user_cmd::execute(int argc, char* argv[])
 {
 	if (argc < 4) return false;
 
-	try
+	using namespace boost::json;
+	net::io_context ioc;
+	ssl::context ctx{ssl::context::tlsv12_client};
+	ctx.set_default_verify_paths();
+	tcp::resolver resolver{ioc};
+
+	std::string req_msg = R"(["REQ","${subscription_id}",{"kinds":[0],"authors":["${pub_key}"],"limit":1}])";
 	{
-		using namespace boost::json;
-		net::io_context ioc;
-		ssl::context ctx{ssl::context::tlsv12_client};
-		ctx.set_default_verify_paths();
-		tcp::resolver resolver{ioc};
+		std::string subscription_id = sha256(random(8));
+		pubkey pub_key { argv[2] };
+		assert(replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${pub_key}",pub_key.to_hex()}}));
+	}
+	bool ok = true;
+	for (int i = 3; i < argc; ++i)
+	{
+		std::string host_address = argv[i];
+		auto&& [host, port] = split_pair(host_address, ':');
 
-		std::string req_msg = R"(["REQ","${subscription_id}",{"kinds":[0],"authors":["${pub_key}"],"limit":1}])";
+		try
 		{
-			std::string subscription_id = sha256(random(8));
-			pubkey pub_key { argv[2] };
-			assert(replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${pub_key}",pub_key.to_hex()}}));
-		}
-		bool result = true;
-		for (int i = 3; i < argc; ++i)
-		{
-			std::string host_address = argv[i];
-			auto&& [host, port] = split_pair(host_address, ':');
+			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
+			auto const results = resolver.resolve(host, port);
+			net::connect(beast::get_lowest_layer(ws), results);
 
-			try
+			if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
+				throw beast::system_error(
+					beast::error_code(
+						static_cast<int>(::ERR_get_error()),
+						net::error::get_ssl_category()),
+					"Failed to set SNI Hostname");
+
+
+			ws.next_layer().handshake(ssl::stream_base::client);
+
+			ws.set_option(websocket::stream_base::decorator(
+			[](websocket::request_type& req)
 			{
-				websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-				auto const results = resolver.resolve(host, port);
-				net::connect(beast::get_lowest_layer(ws), results);
+				req.set(http::field::user_agent,
+					std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
+			}));
 
-				if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
-					throw beast::system_error(
-						beast::error_code(
-							static_cast<int>(::ERR_get_error()),
-							net::error::get_ssl_category()),
-						"Failed to set SNI Hostname");
-
-
-				ws.next_layer().handshake(ssl::stream_base::client);
-
-				ws.set_option(websocket::stream_base::decorator(
-				[](websocket::request_type& req)
-				{
-					req.set(http::field::user_agent,
-						std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
-				}));
-
-				ws.handshake(host_address, "/");
-				ws.write(net::buffer(req_msg));
-				beast::flat_buffer buffer;
-				ws.read(buffer);
-				ws.close(websocket::close_code::normal);
-				value vjson = parse(beast::buffers_to_string(buffer.data()));
-				auto&& evt_array = vjson.as_array();
-				if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")
-				{
-					std::cout << serialize(evt_array[2].as_object()) << std::endl;
-					return true;
-				}
-				else if (evt_array.size() == 2 && value_to<std::string>(evt_array[0]) == "EOSE")
-				{
-					continue;
-				}
+			ws.handshake(host_address, "/");
+			ws.write(net::buffer(req_msg));
+			beast::flat_buffer buffer;
+			ws.read(buffer);
+			ws.close(websocket::close_code::normal);
+			value vjson = parse(beast::buffers_to_string(buffer.data()));
+			auto&& evt_array = vjson.as_array();
+			if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")
+			{
+				std::cout << serialize(evt_array[2].as_object()) << std::endl;
+				return true;
 			}
-			catch (const std::exception& e)
+			else if (evt_array.size() == 2 && value_to<std::string>(evt_array[0]) == "EOSE")
 			{
-				result = false;
-				std::cerr << "Error [" << host_address << "]: " << e.what() << std::endl;
 				continue;
 			}
 		}
-		return result;
+		catch (const std::exception& e)
+		{
+			ok = false;
+			std::cerr << "Error [" << host_address << "]: " << e.what() << std::endl;
+			continue;
+		}
 	}
-	catch(const std::exception& e)
-	{
-		std::cerr << argv[0] << ' ' << argv[1] << ' ' << argv[2] << ' ' << argv[3] << " Error: " << e.what() << std::endl;
-		return false;;
-	}
+
+	if (!ok) throw error("REQ user fail");
 
 	return true;
 }
