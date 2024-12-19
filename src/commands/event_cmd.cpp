@@ -13,6 +13,7 @@
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/json.hpp>
 
 #include "../nostr.h"
 #include "../utils.h"
@@ -58,6 +59,7 @@ bool event_cmd::execute(int argc, char* argv[])
 		auto&& [host, port] = split_pair(host_address, ':');
 		try
 		{
+			using namespace boost::json;
 			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
 			auto const results = resolver.resolve(host, port);
 			net::connect(beast::get_lowest_layer(ws), results);
@@ -88,10 +90,9 @@ bool event_cmd::execute(int argc, char* argv[])
 			ws.close(websocket::close_code::normal);
 			std::cout << "read [" << host_address << "]: " << beast::make_printable(buffer.data()) << std::endl;
 			// ["OK","23f8ced2dd2fe3e8f61e11b60d870bcbdbe0d922b509df7b940c2e8925855b97",true,""]
-			// ["NOTICE","ERROR: bad msg: unparseable message"]
-			auto msg = beast::buffers_to_string(buffer.data());
-			// TODO
-			ok = msg.find("OK") != msg.npos;
+			value vjson = parse(beast::buffers_to_string(buffer.data()));
+			auto&& result_array = vjson.as_array();
+			ok = result_array.size() == 4 && value_to<std::string>(result_array[0]) == "OK" && result_array[2].as_bool();
 		}
 		catch(const std::exception& e)
 		{
