@@ -4,3 +4,7 @@
 [submodule "external/bech32"]
 	path = external/bech32
 	url = https://github.com/sipa/bech32.git
+[submodule "external/asio-socks45-client"]
+	path = external/asio-socks45-client
+	url = https://github.com/bvcxza/asio-socks45-client.git
+	branch = buildErrorsGcc13

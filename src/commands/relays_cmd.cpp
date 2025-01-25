@@ -7,7 +7,6 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
-#include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/json.hpp>
@@ -15,6 +14,7 @@
 
 #include "../pubkey.h"
 #include "../utils.h"
+#include "../net_utils.h"
 
 namespace sonos
 {
@@ -61,8 +61,7 @@ bool relays_cmd::execute(int argc, char* argv[])
 		try
 		{
 			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-			auto const results = resolver.resolve(host, port);
-			net::connect(beast::get_lowest_layer(ws), results);
+			connect(beast::get_lowest_layer(ws), resolver, tcp::resolver::query{host, port});
 
 			if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
 				throw beast::system_error(
@@ -85,7 +84,9 @@ bool relays_cmd::execute(int argc, char* argv[])
 			ws.write(net::buffer(req_msg));
 			beast::flat_buffer buffer;
 			ws.read(buffer);
+			try{
 			ws.close(websocket::close_code::normal);
+			}catch(...){ /*socks5 throws "Transport endpoint is not connected"*/ }
 			value vjson = parse(beast::buffers_to_string(buffer.data()));
 			auto&& evt_array = vjson.as_array();
 			if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")

@@ -45,6 +45,7 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	Boost::headers
 	${CMAKE_SOURCE_DIR}/external/bech32/ref/c++
 	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+	${CMAKE_SOURCE_DIR}/external/asio-socks45-client
 )
 target_link_libraries(${CMAKE_PROJECT_NAME}
 	Threads::Threads
@@ -69,6 +70,7 @@ target_include_directories(main_ex PRIVATE
 	Boost::headers
 	${CMAKE_SOURCE_DIR}/external/bech32/ref/c++
 	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+	${CMAKE_SOURCE_DIR}/external/asio-socks45-client
 )
 target_link_libraries(main_ex
 	Threads::Threads

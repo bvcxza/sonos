@@ -10,13 +10,13 @@
 #include <boost/beast/core.hpp>
 #include <boost/beast/websocket.hpp>
 #include <boost/beast/websocket/ssl.hpp>
-#include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
 #include <boost/json.hpp>
 
 #include "../nostr.h"
 #include "../utils.h"
+#include "../net_utils.h"
 
 namespace sonos
 {
@@ -61,8 +61,7 @@ bool event_cmd::execute(int argc, char* argv[])
 		{
 			using namespace boost::json;
 			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-			auto const results = resolver.resolve(host, port);
-			net::connect(beast::get_lowest_layer(ws), results);
+			connect(beast::get_lowest_layer(ws), resolver, tcp::resolver::query{host, port});
 
 			if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
 				throw beast::system_error(
@@ -87,7 +86,9 @@ bool event_cmd::execute(int argc, char* argv[])
 			std::cout << "write: " << event << std::endl;
 			beast::flat_buffer buffer;
 			ws.read(buffer);
+			try{
 			ws.close(websocket::close_code::normal);
+			}catch(...){ /*socks5 throws "Transport endpoint is not connected"*/ }
 			std::cout << "read [" << host_address << "]: " << beast::make_printable(buffer.data()) << std::endl;
 			// ["OK","23f8ced2dd2fe3e8f61e11b60d870bcbdbe0d922b509df7b940c2e8925855b97",true,""]
 			value vjson = parse(beast::buffers_to_string(buffer.data()));
