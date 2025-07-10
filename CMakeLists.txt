@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_AUTOUIC ON)
+
 if(NOT MSVC)
 	add_compile_options("-Wall" "-Wextra" "-Werror" "$<$<CONFIG:RELEASE>:-O3>")
 endif()
@@ -31,6 +35,9 @@ set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.73 REQUIRED json url)
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
+#qt_standard_project_setup()
+
 add_library(${CMAKE_PROJECT_NAME})
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	external/bech32/ref/c++/bech32.cpp
@@ -56,12 +63,15 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 )
 
 add_executable(main_ex
+	src/gui/worker.cpp
+	src/gui/main_window.cpp
 	src/commands/convert_cmd.cpp
 	src/commands/event_cmd.cpp
 	src/commands/keypair_cmd.cpp
 	src/commands/relays_cmd.cpp
 	src/commands/req_cmd.cpp
 	src/commands/user_cmd.cpp
+	src/commands/gui_cmd.cpp
 	src/main.cpp
 )
 set_property(TARGET main_ex PROPERTY OUTPUT_NAME ${CMAKE_PROJECT_NAME})
@@ -79,6 +89,7 @@ target_link_libraries(main_ex
 	${CMAKE_PROJECT_NAME}
 	Boost::json
 	Boost::url
+	Qt5::Widgets
 )
 
 # Tests

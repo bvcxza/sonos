@@ -11,6 +11,7 @@
 #include "commands/relays_cmd.h"
 #include "commands/req_cmd.h"
 #include "commands/user_cmd.h"
+#include "commands/gui_cmd.h"
 
 //------------------------------------------------------------------------------
 
@@ -33,7 +34,8 @@ int main(int argc, char* argv[])
 		{"keypair", std::make_shared<sonos::keypair_cmd>()},
 		{"relays", std::make_shared<sonos::relays_cmd>()},
 		{"req", std::make_shared<sonos::req_cmd>()},
-		{"user", std::make_shared<sonos::user_cmd>()}//,
+		{"user", std::make_shared<sonos::user_cmd>()},
+		{"gui", std::make_shared<sonos::gui_cmd>()}//,
 	};
 
 	// Check command line arguments.
