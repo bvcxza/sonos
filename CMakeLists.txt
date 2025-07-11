@@ -64,6 +64,7 @@ target_link_libraries(${CMAKE_PROJECT_NAME}
 
 add_executable(main_ex
 	src/gui/worker.cpp
+	src/gui/ws_worker.cpp
 	src/gui/main_window.cpp
 	src/commands/convert_cmd.cpp
 	src/commands/event_cmd.cpp

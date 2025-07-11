@@ -22,6 +22,8 @@ public:
 		connect(this, &QThread::finished, this, &QObject::deleteLater);
 	}
 
+	~worker() override = default;
+
 signals:
 	void done(const QVariant& result);
 	void fail(const QString& msg, const QString& type);

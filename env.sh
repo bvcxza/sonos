@@ -46,3 +46,5 @@ run()
 
 
 export CMAKE_CXX_COMPILER_LAUNCHER=ccache
+# tor
+export SONOS_SOCKS_ENDPOINT="127.0.0.1:9050"
