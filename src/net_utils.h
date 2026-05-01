@@ -11,15 +11,15 @@
 namespace sonos
 {
 
-template <class Socket, class Resolver, class QueryTarget>
-void connect(Socket& socket, Resolver& resolver, const QueryTarget& query)
+template <class Socket, class Resolver>
+void connect(Socket& socket, Resolver& resolver, const std::string& host, const std::string& port)
 {
-	auto const results = resolver.resolve(query);
+	auto&& results = resolver.resolve(host, port);
 	if (const char* socks_endpoint = std::getenv("SONOS_SOCKS_ENDPOINT"))
 	{
-		auto&& [host, port] = split_pair(socks_endpoint, ':');
-		auto const proxy_results = resolver.resolve(host, port);
-		socks5::proxy_connect(socket, results->endpoint(), proxy_results->endpoint());
+		auto&& [proxy_host, proxy_port] = split_pair(socks_endpoint, ':');
+		auto&& proxy_result = resolver.resolve(proxy_host, proxy_port).begin();
+		socks5::proxy_connect(socket, results.begin()->endpoint(), proxy_result->endpoint());
 	}
 	else
 	{

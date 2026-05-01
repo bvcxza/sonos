@@ -61,7 +61,7 @@ bool relays_cmd::execute(int argc, char* argv[])
 		try
 		{
 			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-			connect(beast::get_lowest_layer(ws), resolver, tcp::resolver::query{host, port});
+			connect(beast::get_lowest_layer(ws), resolver, host, port);
 
 			if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
 				throw beast::system_error(

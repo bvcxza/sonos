@@ -84,7 +84,8 @@ bool req_cmd::execute(int argc, char* argv[])
 					out << serialize(evt_obj) << std::endl;
 					out.close();
 					std::cout << "command: " << fullCmd << std::endl;
-					std::system(fullCmd.c_str());
+					auto cmdRet = std::system(fullCmd.c_str());
+					assert(cmdRet == 0);
 
 					evt_id_set.insert(evt_id);
 				}
@@ -101,7 +102,7 @@ bool req_cmd::execute(int argc, char* argv[])
 		websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
 		std::string host_address = argv[i];
 		auto&& [host, port] = split_pair(host_address, ':');
-		connect(beast::get_lowest_layer(ws), resolver, tcp::resolver::query{host, port});
+		connect(beast::get_lowest_layer(ws), resolver, host, port);
 
 		if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
 			throw beast::system_error(

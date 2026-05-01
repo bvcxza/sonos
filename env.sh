@@ -1,5 +1,5 @@
 
-conda activate $(basename $PWD)
+which conda && conda activate $(basename $PWD)
 
 # functions
 
