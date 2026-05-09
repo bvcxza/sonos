@@ -4,6 +4,7 @@
   inputs = {
     # Latest stable Nixpkgs
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    self.submodules = true;
   };
 
   outputs =
@@ -42,6 +43,7 @@
                 ccache
                 gdb
                 gtest
+                which
               ];
               cppDependencies = with pkgs; [
                 boost
@@ -53,11 +55,18 @@
               src = self;
               nativeBuildInputs = devTools;
               buildInputs = cppDependencies;
-#              buildPhase = "c++ -std=c++17 -o ${binName} ${./main.cpp} -lPocoFoundation -lboost_system";
-#              installPhase = ''
-#                mkdir -p $out/bin
-#                cp ${binName} $out/bin/
-#              '';
+              shellHook = ". env.sh";
+              configurePhase = ''
+                . env.sh
+                unset CMAKE_CXX_COMPILER_LAUNCHER
+                bld_secp256k1 && cnf
+              '';
+              buildPhase = "bld && tst";
+              installPhase = ''
+                runHook preInstall
+                install -vD build/${binName} $out/bin/${binName}
+                runHook postInstall
+              '';
             };
         }
       );
