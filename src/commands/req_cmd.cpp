@@ -83,10 +83,12 @@ bool req_cmd::execute(int argc, char* argv[])
 					std::ofstream out(in_file_path);
 					out << serialize(evt_obj) << std::endl;
 					out.close();
-					std::cout << "command: " << fullCmd << std::endl;
+					std::cout << "[" << host_address << "] command: " << fullCmd << std::endl;
 					auto cmdRet = std::system(fullCmd.c_str());
-					assert(cmdRet == 0);
-
+					if (cmdRet != 0)
+					{
+						std::cerr << "[" << host_address << "] command return " << cmdRet << ": " << fullCmd << std::endl;
+					}
 					evt_id_set.insert(evt_id);
 				}
 			}
@@ -99,33 +101,40 @@ bool req_cmd::execute(int argc, char* argv[])
 	std::cout << req_msg << std::endl;
 	for (int i = 4; i < argc; ++i)
 	{
-		websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
 		std::string host_address = argv[i];
-		auto&& [host, port] = split_pair(host_address, ':');
-		connect(beast::get_lowest_layer(ws), resolver, host, port);
-
-		if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
-			throw beast::system_error(
-				beast::error_code(
-					static_cast<int>(::ERR_get_error()),
-					net::error::get_ssl_category()),
-				"Failed to set SNI Hostname");
-
-
-		ws.next_layer().handshake(ssl::stream_base::client);
-
-		ws.set_option(websocket::stream_base::decorator(
-		[](websocket::request_type& req)
+		try
 		{
-			req.set(http::field::user_agent,
-				std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
-		}));
+			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
+			auto&& [host, port] = split_pair(host_address, ':');
+			connect(beast::get_lowest_layer(ws), resolver, host, port);
 
-		std::cout << "=> " << host_address << std::endl;
-		ws.handshake(host_address, "/");
-		ws.write(net::buffer(req_msg));
+			if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
+				throw beast::system_error(
+					beast::error_code(
+						static_cast<int>(::ERR_get_error()),
+						net::error::get_ssl_category()),
+					"Failed to set SNI Hostname");
 
-		std::thread(handle_event, std::move(ws), std::move(host_address)).detach();
+
+			ws.next_layer().handshake(ssl::stream_base::client);
+
+			ws.set_option(websocket::stream_base::decorator(
+			[](websocket::request_type& req)
+			{
+				req.set(http::field::user_agent,
+					std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
+			}));
+
+			std::cout << "=> " << host_address << std::endl;
+			ws.handshake(host_address, "/");
+			ws.write(net::buffer(req_msg));
+
+			std::thread(handle_event, std::move(ws), host_address).detach();
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "Error [" << host_address << "] connect or handshake: " << e.what() << std::endl;
+		}
 	}
 	std::condition_variable cv;
 	std::unique_lock<std::mutex> lk(mutex);
