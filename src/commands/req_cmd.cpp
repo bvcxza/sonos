@@ -46,10 +46,6 @@ bool req_cmd::execute(int argc, char* argv[])
 	if (argc < 5) return false;
 
 	using namespace boost::json;
-	net::io_context ioc;
-	tcp::resolver resolver{ioc};
-	ssl::context ctx{ssl::context::tlsv12_client};
-	ctx.set_default_verify_paths();
 	std::string subscription_id = sha256(random(8));
 	auto in_file_name = "sonos" + subscription_id;
 	const std::filesystem::path in_file_path = std::filesystem::temp_directory_path() / in_file_name;
@@ -64,13 +60,56 @@ bool req_cmd::execute(int argc, char* argv[])
 	}
 	std::mutex mutex;
 	std::unordered_set<std::string> evt_id_set; // TODO limit
-	auto handle_event = [&in_file_path,&fullCmd,&mutex,&evt_id_set](websocket::stream<ssl::stream<tcp::socket>>&& ws, std::string&& host_address){
-		try
+	auto worker = [&in_file_path,&fullCmd,&mutex,&evt_id_set,&req_msg](std::string&& host_address){
+		net::io_context ioc;
+		ssl::context ctx{ssl::context::tlsv12_client};
+		ctx.set_default_verify_paths();
+		using ws_stream = websocket::stream<ssl::stream<tcp::socket>>;
+		auto ws = std::make_unique<ws_stream>(ioc, ctx);
+		tcp::resolver resolver{ioc};
+		auto&& [host, port] = split_pair(host_address, ':');
+		connect(beast::get_lowest_layer(*ws), resolver, host, port);
+		bool reconnect = false;
+		for (;;)
 		{
-			for (;ws.is_open();)
+			try
 			{
+				if (reconnect)
+				{
+					std::cout << "[" << host_address << "] reconnecting... " << std::endl;
+					ws.reset(new ws_stream(ioc, ctx));
+					connect(beast::get_lowest_layer(*ws), resolver, host, port);
+					reconnect = false;
+				}
+				if (!ws->is_open())
+				{
+					if (!SSL_set_tlsext_host_name(ws->next_layer().native_handle(), host.c_str()))
+						throw beast::system_error(
+							beast::error_code(
+								static_cast<int>(::ERR_get_error()),
+								net::error::get_ssl_category()),
+							"Failed to set SNI Hostname");
+
+
+					ws->next_layer().handshake(ssl::stream_base::client);
+
+					ws->set_option(
+						websocket::stream_base::timeout::suggested(
+							beast::role_type::server));
+					ws->set_option(websocket::stream_base::decorator(
+					[](websocket::request_type& req)
+					{
+						req.set(http::field::user_agent,
+							std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
+					}));
+
+					std::cout << "=> " << host_address << std::endl;
+					ws->handshake(host_address, "/");
+					ws->write(net::buffer(req_msg));
+				}
+
 				beast::flat_buffer buffer;
-				ws.read(buffer);
+				ws->read(buffer);
 				value vjson = parse(beast::buffers_to_string(buffer.data()));
 				auto&& evt_array = vjson.as_array();
 				if (evt_array.size() == 3 && value_to<std::string>(evt_array[0]) == "EVENT")
@@ -92,49 +131,18 @@ bool req_cmd::execute(int argc, char* argv[])
 					evt_id_set.insert(evt_id);
 				}
 			}
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << "Error [" << host_address << "] handle_event: " << e.what() << std::endl;
+			catch(const std::exception& e)
+			{
+				reconnect = true;
+				std::cerr << "Error [" << host_address << "] worker: " << e.what() << std::endl;
+			}
 		}
 	};
 	std::cout << req_msg << std::endl;
 	for (int i = 4; i < argc; ++i)
 	{
 		std::string host_address = argv[i];
-		try
-		{
-			websocket::stream<ssl::stream<tcp::socket>> ws{ioc, ctx};
-			auto&& [host, port] = split_pair(host_address, ':');
-			connect(beast::get_lowest_layer(ws), resolver, host, port);
-
-			if (!SSL_set_tlsext_host_name(ws.next_layer().native_handle(), host.c_str()))
-				throw beast::system_error(
-					beast::error_code(
-						static_cast<int>(::ERR_get_error()),
-						net::error::get_ssl_category()),
-					"Failed to set SNI Hostname");
-
-
-			ws.next_layer().handshake(ssl::stream_base::client);
-
-			ws.set_option(websocket::stream_base::decorator(
-			[](websocket::request_type& req)
-			{
-				req.set(http::field::user_agent,
-					std::string(BOOST_BEAST_VERSION_STRING) + " sonos");
-			}));
-
-			std::cout << "=> " << host_address << std::endl;
-			ws.handshake(host_address, "/");
-			ws.write(net::buffer(req_msg));
-
-			std::thread(handle_event, std::move(ws), host_address).detach();
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << "Error [" << host_address << "] connect or handshake: " << e.what() << std::endl;
-		}
+		std::thread(worker, std::move(host_address)).detach();
 	}
 	std::condition_variable cv;
 	std::unique_lock<std::mutex> lk(mutex);
