@@ -6,7 +6,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT MSVC)
+	message(STATUS "NOT MSVC")
 	add_compile_options("-Wall" "-Wextra" "-Werror" "$<$<CONFIG:RELEASE>:-O3>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-Wpointer-arith>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-Wundef>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-Wno-stringop-overflow>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-fsanitize=address>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-fsanitize=leak>")
+	add_compile_options("$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
+	add_link_options("$<$<CONFIG:DEBUG>:-fsanitize=address>")
+	add_link_options("$<$<CONFIG:DEBUG>:-fsanitize=leak>")
+	add_link_options("$<$<CONFIG:DEBUG>:-fsanitize=undefined>")
 endif()
 
 message(STATUS "Build environment:
@@ -132,9 +143,5 @@ install(TARGETS ${CMAKE_PROJECT_NAME} main_ex)
 
 message(STATUS "Summary of build options:
 	CXX compiler:                 ${CMAKE_CXX_COMPILER} (${CMAKE_CXX_COMPILER_ID})
-	C_FLAGS:                      ${CMAKE_C_FLAGS}
-	CXX_FLAGS:                    ${CMAKE_CXX_FLAGS}
-	CMAKE_EXE_LINKER_FLAGS:       ${CMAKE_EXE_LINKER_FLAGS}
-	CMAKE_THREAD_LIBS_INIT        ${CMAKE_THREAD_LIBS_INIT}
 	CMAKE_INSTALL_PREFIX          ${CMAKE_INSTALL_PREFIX}
 ")
