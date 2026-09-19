@@ -49,7 +49,7 @@ message(STATUS "SECP256K1_LIBRARIES: ${SECP256K1_LIBRARIES}")
 
 add_library(${CMAKE_PROJECT_NAME})
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
-	external/bech32/ref/c++/bech32.cpp
+	${CMAKE_SOURCE_DIR}/external/bech32/ref/c++/bech32.cpp
 	src/utils.cpp
 	src/key.cpp
 	src/pubkey.cpp
