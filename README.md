@@ -61,6 +61,12 @@ user:
 
 ```
 
+### Run without installation
+
+```
+nix run 'git+https://github.com/bvcxza/sonos?submodules=1' -- <command>
+```
+
 ### Send a REQ and handle events with external program
 
 Example: Call a [bash script](samples/script.sh) for each [event](https://github.com/nostr-protocol/nips/blob/master/01.md#events-and-signatures) with tag "Monero".
