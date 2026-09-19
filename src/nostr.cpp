@@ -25,6 +25,7 @@ std::string nostr::make_event(uint16_t kind, const std::string& content, const s
 	"sig":"${sig}"
 }])";
 	auto created_at = std::to_string(timestamp());
+	[[maybe_unused]]
 	bool result = replaceAll(serial_event, {
 		{"${pubkey}", m_keypair.pub().to_hex()},
 		{"${created_at}", created_at},

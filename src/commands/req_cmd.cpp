@@ -55,8 +55,11 @@ bool req_cmd::execute(int argc, char* argv[])
 	{
 		std::string filters = argv[2];
 		std::string command = argv[3];
-		assert(replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${filters}",filters}}));
-		assert(replaceAll(fullCmd, {{"${command}",command},{"${in_file_path}",in_file_path.string()}}));
+		[[maybe_unused]]
+		bool ok = replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${filters}",filters}});
+		assert(ok);
+		ok = replaceAll(fullCmd, {{"${command}",command},{"${in_file_path}",in_file_path.string()}});
+		assert(ok);
 	}
 	std::mutex mutex;
 	std::unordered_set<std::string> evt_id_set; // TODO limit

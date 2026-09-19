@@ -4,7 +4,7 @@ A C++ library and a command line tool for [Nostr](https://nostr.com). It follows
 
 ## Prerequisite to build
 
-This project uses [miniforge](https://github.com/conda-forge/miniforge) as dependency manager. Follow [instructions](https://github.com/conda-forge/miniforge#install) to install it.
+This project uses [Nix](https://nixos.org) as dependency manager. Follow [instructions](https://nixos.org/download) to install it.
 
 ## For users
 
@@ -15,9 +15,9 @@ See [Prerequisite](#prerequisite-to-build) before build.
 ```
 git clone --recurse-submodules https://github.com/bvcxza/sonos.git
 cd sonos
-mamba env update -n $(basename $PWD) -f conda.yml
+nix develop
 . env.sh
-bld_secp256k1 && cnf -DCMAKE_INSTALL_PREFIX=~/.local && bld install
+cnf -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=~/.local && bld install
 ```
 
 ### Run
@@ -79,9 +79,9 @@ See [Prerequisite](#prerequisite-to-build) before build.
 git clone https://github.com/bvcxza/sonos.git
 cd sonos
 git submodule update --init --force --recursive
-mamba env update -n $(basename $PWD) -f conda.yml
+nix develop
 . env.sh
-bld_secp256k1 && cnf && bld && tst
+cnf && bld && tst
 ```
 
 ### Run

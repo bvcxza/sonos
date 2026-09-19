@@ -47,7 +47,9 @@ bool user_cmd::execute(int argc, char* argv[])
 	{
 		std::string subscription_id = sha256(random(8));
 		pubkey pub_key { argv[2] };
-		assert(replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${pub_key}",pub_key.to_hex()}}));
+		[[maybe_unused]]
+		bool ok = replaceAll(req_msg, {{"${subscription_id}",subscription_id},{"${pub_key}",pub_key.to_hex()}});
+		assert(ok);
 	}
 	bool ok = true;
 	for (int i = 3; i < argc; ++i)

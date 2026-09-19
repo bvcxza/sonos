@@ -3,7 +3,7 @@
 
   inputs = {
     # Latest stable Nixpkgs
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs.url = "github:nixos/nixpkgs";
     self.submodules = true;
   };
 
@@ -36,8 +36,8 @@
             let
               binName = "sonos";
               devTools = with pkgs; [
+                bash
                 cmake
-                gnumake
                 pkg-config
                 ninja
                 ccache
@@ -48,6 +48,7 @@
               cppDependencies = with pkgs; [
                 boost
                 openssl
+                secp256k1
               ];
             in
             pkgs.stdenv.mkDerivation {
@@ -55,18 +56,6 @@
               src = self;
               nativeBuildInputs = devTools;
               buildInputs = cppDependencies;
-              shellHook = ". env.sh";
-              configurePhase = ''
-                . env.sh
-                unset CMAKE_CXX_COMPILER_LAUNCHER
-                bld_secp256k1 && cnf
-              '';
-              buildPhase = "bld && tst";
-              installPhase = ''
-                runHook preInstall
-                install -vD build/${binName} $out/bin/${binName}
-                runHook postInstall
-              '';
             };
         }
       );

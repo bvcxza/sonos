@@ -1,24 +1,5 @@
 
-which conda && conda activate $(basename $PWD)
-
 # functions
-
-bld_secp256k1()
-{
-	[[ -d build_secp256k1 ]] || mkdir build_secp256k1
-	(cd build_secp256k1 && \
-	cmake --fresh -G Ninja \
-		-D CMAKE_BUILD_TYPE=Release \
-		-D BUILD_SHARED_LIBS=OFF \
-		-D SECP256K1_ENABLE_MODULE_SCHNORRSIG=ON \
-		-D SECP256K1_BUILD_BENCHMARK=OFF \
-		-D SECP256K1_BUILD_EXHAUSTIVE_TESTS=OFF \
-		-D SECP256K1_BUILD_TESTS=OFF \
-		-D SECP256K1_INSTALL=OFF \
-		-D SECP256K1_VALGRIND=OFF \
-		../external/secp256k1 \
-	&& ninja)
-}
 
 cnf()
 {

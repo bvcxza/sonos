@@ -7,7 +7,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(NOT MSVC)
 	message(STATUS "NOT MSVC")
-	add_compile_options("-Wall" "-Wextra" "-Werror" "$<$<CONFIG:RELEASE>:-O3>")
+	add_compile_options("-Wall" "-Wextra" "$<$<CONFIG:DEBUG>:-Werror>" "$<$<CONFIG:RELEASE>:-O3>")
 	add_compile_options("$<$<CONFIG:DEBUG>:-Wpedantic>")
 	add_compile_options("$<$<CONFIG:DEBUG>:-Wpointer-arith>")
 	add_compile_options("$<$<CONFIG:DEBUG>:-Wundef>")
@@ -42,6 +42,11 @@ set(Boost_USE_MULTITHREADED ON)
 find_package(Boost 1.73 REQUIRED json url)
 message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
 
+find_package(PkgConfig REQUIRED)
+pkg_search_module(SECP256K1 REQUIRED libsecp256k1)
+message(STATUS "SECP256K1_INCLUDEDIR: ${SECP256K1_INCLUDEDIR}")
+message(STATUS "SECP256K1_LIBRARIES: ${SECP256K1_LIBRARIES}")
+
 add_library(${CMAKE_PROJECT_NAME})
 target_sources(${CMAKE_PROJECT_NAME} PRIVATE
 	external/bech32/ref/c++/bech32.cpp
@@ -55,13 +60,13 @@ target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
 	${OPENSSL_INCLUDE_DIR}
 	Boost::headers
 	${CMAKE_SOURCE_DIR}/external/bech32/ref/c++
-	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+	${SECP256K1_INCLUDEDIR}
 	${CMAKE_SOURCE_DIR}/external/asio-socks45-client
 )
 target_link_libraries(${CMAKE_PROJECT_NAME}
 	Threads::Threads
 	${OPENSSL_LIBRARIES}
-	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
+	${SECP256K1_LIBRARIES}
 	Boost::json
 	Boost::url
 )
@@ -77,16 +82,16 @@ add_executable(main_ex
 )
 set_property(TARGET main_ex PROPERTY OUTPUT_NAME ${CMAKE_PROJECT_NAME})
 target_include_directories(main_ex PRIVATE
-	include
+	${CMAKE_SOURCE_DIR}/include
 	Boost::headers
 	${CMAKE_SOURCE_DIR}/external/bech32/ref/c++
-	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+	${SECP256K1_INCLUDEDIR}
 	${CMAKE_SOURCE_DIR}/external/asio-socks45-client
 )
 target_link_libraries(main_ex
 	Threads::Threads
 	${OPENSSL_LIBRARIES}
-	${CMAKE_SOURCE_DIR}/build_secp256k1/lib/libsecp256k1.a
+	${SECP256K1_LIBRARIES}
 	${CMAKE_PROJECT_NAME}
 	Boost::json
 	Boost::url
@@ -112,8 +117,8 @@ gtest_discover_tests(KeyTest)
 # KeyPairTest >
 add_executable(KeyPairTest test/keypair_test.cpp)
 target_include_directories(KeyPairTest PRIVATE
-	include
-	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+	${CMAKE_SOURCE_DIR}/include
+	${SECP256K1_INCLUDEDIR}
 )
 target_link_libraries(KeyPairTest
 	GTest::GTest
@@ -126,8 +131,8 @@ gtest_discover_tests(KeyPairTest)
 # NostrTest >
 add_executable(NostrTest test/nostr_test.cpp)
 target_include_directories(NostrTest PRIVATE
-	include
-	${CMAKE_SOURCE_DIR}/external/secp256k1/include
+	${CMAKE_SOURCE_DIR}/include
+	${SECP256K1_INCLUDEDIR}
 )
 target_link_libraries(NostrTest
 	GTest::GTest

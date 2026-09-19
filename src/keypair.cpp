@@ -15,10 +15,15 @@ keypair::keypair(key&& secret_key)
 	, m_sec(secret_key)
 {
 	secp256k1_xonly_pubkey pubkey;
-	assert(secp256k1_context_randomize(m_ctx.get(), random(32).data()));
-	assert(secp256k1_keypair_create(m_ctx.get(), &m_keypair, m_sec.data()));
-	assert(secp256k1_keypair_xonly_pub(m_ctx.get(), &pubkey, nullptr, &m_keypair));
-	assert(secp256k1_xonly_pubkey_serialize(m_ctx.get(), m_pub.data(), &pubkey));
+	[[maybe_unused]]
+	bool ok = secp256k1_context_randomize(m_ctx.get(), random(32).data());
+	assert(ok);
+	ok = secp256k1_keypair_create(m_ctx.get(), &m_keypair, m_sec.data());
+	assert(ok);
+	ok = secp256k1_keypair_xonly_pub(m_ctx.get(), &pubkey, nullptr, &m_keypair);
+	assert(ok);
+	ok = secp256k1_xonly_pubkey_serialize(m_ctx.get(), m_pub.data(), &pubkey);
+	assert(ok);
 }
 
 keypair::keypair(std::vector<uint8_t>&& secret_data) : keypair(key(std::move(secret_data))) {}
@@ -32,7 +37,9 @@ std::string keypair::sign(const std::string& msg_hash) const
 	boost::algorithm::unhex(msg_hash, std::back_inserter(hash));
 	std::vector<uint8_t> signature;
 	signature.resize(64);
-	assert(secp256k1_schnorrsig_sign32(m_ctx.get(), signature.data(), hash.data(), &m_keypair, random(32).data()));
+	[[maybe_unused]]
+	bool ok = secp256k1_schnorrsig_sign32(m_ctx.get(), signature.data(), hash.data(), &m_keypair, random(32).data());
+	assert(ok);
 	std::string to;
 	boost::algorithm::hex_lower(signature.begin(), signature.end(), std::back_inserter(to));
 	return to;
