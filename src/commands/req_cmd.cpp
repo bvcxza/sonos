@@ -71,7 +71,15 @@ bool req_cmd::execute(int argc, char* argv[])
 		auto ws = std::make_unique<ws_stream>(ioc, ctx);
 		tcp::resolver resolver{ioc};
 		auto&& [host, port] = split_pair(host_address, ':');
-		connect(beast::get_lowest_layer(*ws), resolver, host, port);
+		try
+		{
+			connect(beast::get_lowest_layer(*ws), resolver, host, port);
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "Connect Error [" << host_address << "]: " << e.what() << std::endl;
+			return;
+		}
 		bool reconnect = false;
 		for (;;)
 		{
